@@ -19,7 +19,7 @@ npm install -g mdprev
 ## Usage
 
 ```bash
-pnpm exec mdprev README.md
+mdprev README.md
 ```
 
 You can also run it directly:
@@ -36,8 +36,8 @@ Options:
 Examples:
 
 ```bash
-pnpm exec mdprev docs/notes.md --port 3456
-pnpm exec mdprev README.md --no-open
+mdprev docs/notes.md --port 3456
+mdprev README.md --no-open
 ```
 
 The server only binds to `127.0.0.1` and prints the URL on startup.
