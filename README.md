@@ -10,13 +10,11 @@ Small local Markdown preview server with live reload.
 
 ## Install
 
-This is a local CLI package. Install dependencies first:
+Install it globally from npm:
 
 ```bash
-pnpm install
+npm install -g mdprev
 ```
-
-If you want to run it as a command, use `pnpm exec` (or `npm`/`npx` equivalents).
 
 ## Usage
 
