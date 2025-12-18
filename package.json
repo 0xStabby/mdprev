@@ -1,6 +1,6 @@
 {
   "name": "markdown-preview",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "description": "",
   "main": "main.mjs",
   "bin": { "markdown-preview": "./main.mjs" },
