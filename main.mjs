@@ -39,6 +39,12 @@ if (!fs.existsSync(mdPath)) {
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
+const sockets = new Set();
+
+server.on("connection", (socket) => {
+  sockets.add(socket);
+  socket.on("close", () => sockets.delete(socket));
+});
 
 const md = new MarkdownIt({
   html: false,
@@ -145,5 +151,11 @@ server.listen(portWanted, "127.0.0.1", () => {
 // Clean shutdown
 process.on("SIGINT", async () => {
   await watcher.close();
+  for (const client of wss.clients) {
+    client.terminate();
+  }
+  for (const socket of sockets) {
+    socket.destroy();
+  }
   server.close(() => process.exit(0));
 });
