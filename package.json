@@ -3,7 +3,15 @@
   "version": "0.0.2",
   "description": "",
   "main": "main.mjs",
+  "files": [
+    "main.mjs",
+    "README.md"
+  ],
   "bin": { "mdprev": "./main.mjs" },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
