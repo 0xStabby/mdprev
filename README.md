@@ -4,7 +4,7 @@ Small local Markdown preview server with live reload.
 
 ## Features
 
-- Renders Markdown to HTML with task lists, footnotes, definition lists, and TOC.
+- Renders GitHub Flavored Markdown (GFM): tables, strikethrough, autolink literals, and task lists.
 - Auto-reloads the browser when the file changes.
 - Sanitizes HTML output via DOMPurify.
 

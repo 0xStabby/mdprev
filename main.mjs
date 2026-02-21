@@ -7,9 +7,6 @@ import chokidar from "chokidar";
 import WebSocket, { WebSocketServer } from "ws";
 import MarkdownIt from "markdown-it";
 import taskLists from "markdown-it-task-lists";
-import footnote from "markdown-it-footnote";
-import deflist from "markdown-it-deflist";
-import toc from "markdown-it-table-of-contents";
 import createDOMPurify from "dompurify";
 import { JSDOM } from "jsdom";
 import open from "open";
@@ -51,11 +48,9 @@ const md = new MarkdownIt({
   linkify: true,
   typographer: true,
   breaks: false,
+  // Tables and strikethrough are enabled by default in markdown-it.
 })
-  .use(taskLists, { enabled: true, label: true, labelAfter: true })
-  .use(footnote)
-  .use(deflist)
-  .use(toc, { includeLevel: [1, 2, 3] });
+  .use(taskLists, { enabled: false, label: false });
 
 const window = new JSDOM("").window;
 const DOMPurify = createDOMPurify(window);
