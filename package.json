@@ -7,7 +7,9 @@
     "main.mjs",
     "README.md"
   ],
-  "bin": { "mdprev": "./main.mjs" },
+  "bin": {
+    "mdprev": "main.mjs"
+  },
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
@@ -18,6 +20,14 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/0xStabby/mdprev.git"
+  },
+  "bugs": {
+    "url": "https://github.com/0xStabby/mdprev/issues"
+  },
+  "homepage": "https://github.com/0xStabby/mdprev#readme",
   "packageManager": "pnpm@10.24.0",
   "dependencies": {
     "chokidar": "^5.0.0",
