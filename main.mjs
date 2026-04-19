@@ -85,7 +85,7 @@ server.on("connection", (socket) => {
 });
 
 const md = new MarkdownIt({
-  html: false,
+  html: true,
   linkify: true,
   typographer: true,
   breaks: false,
@@ -108,12 +108,80 @@ function readMarkdown(index) {
   return fs.readFileSync(mdPaths[index], "utf8");
 }
 
-function renderMarkdownToHtml(src) {
+function splitUrlParts(rawUrl) {
+  const hashIndex = rawUrl.indexOf("#");
+  const beforeHash = hashIndex >= 0 ? rawUrl.slice(0, hashIndex) : rawUrl;
+  const hash = hashIndex >= 0 ? rawUrl.slice(hashIndex) : "";
+  const queryIndex = beforeHash.indexOf("?");
+  const pathname = queryIndex >= 0 ? beforeHash.slice(0, queryIndex) : beforeHash;
+  const query = queryIndex >= 0 ? beforeHash.slice(queryIndex) : "";
+  return { pathname, query, hash };
+}
+
+function isRelativeUrl(rawUrl) {
+  return Boolean(rawUrl)
+    && !rawUrl.startsWith("#")
+    && !rawUrl.startsWith("/")
+    && !rawUrl.startsWith("//")
+    && !/^[a-zA-Z][a-zA-Z\d+.-]*:/.test(rawUrl);
+}
+
+function resolveRelativePath(index, rawUrl) {
+  const { pathname, query, hash } = splitUrlParts(rawUrl);
+  const baseDir = path.dirname(mdPaths[index]);
+  const absolutePath = path.resolve(baseDir, pathname);
+  return { absolutePath, query, hash };
+}
+
+function rewriteRenderedHtml(rawHtml, index) {
+  const dom = new JSDOM(`<body>${rawHtml}</body>`);
+  const { document } = dom.window;
+
+  for (const element of document.querySelectorAll("[href]")) {
+    const href = element.getAttribute("href");
+    if (!href || !isRelativeUrl(href)) continue;
+
+    const { absolutePath, query, hash } = resolveRelativePath(index, href);
+    const mdTargetIndex = mdPaths.findIndex((candidate) => candidate === absolutePath);
+
+    if (mdTargetIndex >= 0) {
+      element.setAttribute("href", `/doc/${mdTargetIndex}${hash}`);
+      continue;
+    }
+
+    const relativeAssetPath = path.relative(docsRoot, absolutePath);
+    if (!relativeAssetPath || relativeAssetPath.startsWith("..") || path.isAbsolute(relativeAssetPath)) {
+      continue;
+    }
+
+    const encodedPath = relativeAssetPath.split(path.sep).map(encodeURIComponent).join("/");
+    element.setAttribute("href", `/__mdprev_asset/${encodedPath}${query}${hash}`);
+  }
+
+  for (const element of document.querySelectorAll("[src]")) {
+    const src = element.getAttribute("src");
+    if (!src || !isRelativeUrl(src)) continue;
+
+    const { absolutePath, query, hash } = resolveRelativePath(index, src);
+    const relativeAssetPath = path.relative(docsRoot, absolutePath);
+    if (!relativeAssetPath || relativeAssetPath.startsWith("..") || path.isAbsolute(relativeAssetPath)) {
+      continue;
+    }
+
+    const encodedPath = relativeAssetPath.split(path.sep).map(encodeURIComponent).join("/");
+    element.setAttribute("src", `/__mdprev_asset/${encodedPath}${query}${hash}`);
+  }
+
+  return document.body.innerHTML;
+}
+
+function renderMarkdownToHtml(src, index) {
   const raw = md.render(src);
   const clean = DOMPurify.sanitize(raw, {
     USE_PROFILES: { html: true },
+    ADD_ATTR: ["align"],
   });
-  return clean;
+  return rewriteRenderedHtml(clean, index);
 }
 
 function getCommonRoot(paths) {
@@ -342,8 +410,26 @@ app.get("/doc/:index", (req, res) => {
   }
 
   const src = readMarkdown(index);
-  const html = renderMarkdownToHtml(src);
+  const html = renderMarkdownToHtml(src, index);
   res.type("html").send(pageHtml(html, index));
+});
+
+app.get(/^\/__mdprev_asset\/(.+)$/, (req, res) => {
+  const relativeAssetPath = req.params[0];
+  const absolutePath = path.resolve(docsRoot, relativeAssetPath);
+  const normalizedRelativePath = path.relative(docsRoot, absolutePath);
+
+  if (!normalizedRelativePath || normalizedRelativePath.startsWith("..") || path.isAbsolute(normalizedRelativePath)) {
+    res.status(403).type("text").send("Asset path not allowed");
+    return;
+  }
+
+  if (!fs.existsSync(absolutePath) || !fs.statSync(absolutePath).isFile()) {
+    res.status(404).type("text").send("Asset not found");
+    return;
+  }
+
+  res.sendFile(absolutePath);
 });
 
 app.get("/ws", (_req, res) => res.status(426).send("Upgrade Required"));

@@ -73,6 +73,30 @@ Inline code: `const x = 1`.
 
 ---
 
-## HTML (Should Be Blocked)
+## HTML
 
-<div>This should be sanitized and not rendered as raw HTML.</div>
+<a id="readme-top"></a>
+
+<div align="center">
+  <h3 align="center">Raw HTML should render</h3>
+  <p align="center">
+    Inline HTML blocks and attributes should survive sanitization.
+    <br />
+    <a href="#html">Jump to this section</a>
+  </p>
+</div>
+
+<details>
+  <summary>Collapsible HTML</summary>
+
+This block should open and close like it does on GitHub.
+</details>
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Reference Style Image
+
+[![React][React.js]][React-url]
+
+[React.js]: https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB
+[React-url]: https://reactjs.org/
